@@ -110,9 +110,9 @@
 
 <svelte:window bind:innerWidth bind:innerHeight />
 
-<main class="flex overflow-hidden w-screen h-screen">
+<main class="flex flex-col md:flex-row overflow-hidden w-screen h-screen">
     <aside
-        class="w-[24rem] min-w-[24rem] h-screen bg-gray-600 overflow-auto p-6 grid gap-2 auto-rows-max"
+        class="w-screen min-w-screen h-[15rem] min-h-[15rem] md:w-[24rem] md:min-w-[24rem] md:h-screen md:min-h-screen bg-gray-600 overflow-auto p-6 grid gap-2 auto-rows-max"
     >
         <h3 class="text-xl font-extrabold text-white">Simple Graph Visualizer</h3>
         <button
@@ -122,18 +122,18 @@
         >
         <ul class="mt-4 grid gap-3 auto-rows-max">
             {#each edges as edge, i (i)}
-                <li class="flex">
-                    <span class="flex-1">
+                <li class="flex gap-2">
+                    <span class="flex-1 flex gap-2 items-center">
                         <input
                             type="text"
-                            class="p-2 rounded max-w-[8rem] bg-gray-700 text-gray-100"
+                            class="p-2 rounded flex-1 md:max-w-[8rem] bg-gray-700 text-gray-100"
                             value={edge[0]}
                             on:input={(e) => handleInput(e, i, 0)}
                         />
                         <span class="text-gray-50 font-bold">-&gt;</span>
                         <input
                             type="text"
-                            class="p-2 rounded max-w-[8rem] bg-gray-700 text-gray-100"
+                            class="p-2 rounded flex-1 md:max-w-[8rem] bg-gray-700 text-gray-100"
                             value={edge[1]}
                             on:input={(e) => handleInput(e, i, 1)}
                         />

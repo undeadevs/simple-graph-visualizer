@@ -77,19 +77,19 @@
         updateNodes();
     }
 
-    let isMouseHold: Record<string, boolean> = {};
+    let isHolding: Record<string, boolean> = {};
 
-    function handleNodeMouseDown(e: Event, nodeName: string) {
-        isMouseHold[nodeName] = true;
+    function handleNodePointerDown(e: Event, nodeName: string) {
+        isHolding[nodeName] = true;
     }
 
-    function handleNodeMouseUp(e: Event, nodeName: string) {
-        isMouseHold[nodeName] = false;
+    function handleNodePointerUp(e: Event, nodeName: string) {
+        isHolding[nodeName] = false;
     }
 
-    function handleNodeMouseMove(e: MouseEvent) {
-        Object.keys(isMouseHold).forEach((nodeName) => {
-            if (isMouseHold[nodeName]) {
+    function handleNodePointerMove(e: MouseEvent) {
+        Object.keys(isHolding).forEach((nodeName) => {
+            if (isHolding[nodeName]) {
                 const updatedX = e.offsetX - viewerWidth / 2;
                 const updatedY = e.offsetY - viewerHeight / 2;
                 nodes[nodeName] = [updatedX, updatedY];
@@ -97,12 +97,12 @@
         });
     }
 
-    function bubbleDownMouseUp(e: MouseEvent) {
-        Object.keys(isMouseHold).forEach((nodeName) => {
-            if (isMouseHold[nodeName]) {
+    function bubbleDownPointerUp(e: MouseEvent) {
+        Object.keys(isHolding).forEach((nodeName) => {
+            if (isHolding[nodeName]) {
                 const chosenNodeEl = document.querySelector(`circle[data-name="${nodeName}"]`);
                 if (chosenNodeEl === e.target) return;
-                isMouseHold[nodeName] = false;
+                isHolding[nodeName] = false;
             }
         });
     }
@@ -154,12 +154,13 @@
         <svg
             width={viewerWidth}
             height={viewerHeight}
+            class="touch-none"
             on:mouseleave={() =>
-                Object.keys(isMouseHold).forEach((node) =>
-                    isMouseHold[node] ? (isMouseHold[node] = false) : false
+                Object.keys(isHolding).forEach((node) =>
+                    isHolding[node] ? (isHolding[node] = false) : false
                 )}
-            on:mousemove={handleNodeMouseMove}
-            on:mouseup={bubbleDownMouseUp}
+            on:pointermove={handleNodePointerMove}
+            on:pointerup={bubbleDownPointerUp}
         >
             <defs>
                 <marker
@@ -185,9 +186,9 @@
                         y={nodes[node][1]}
                         r={nodeRadius}
                         name={node}
-                        on:mousedown={(e) => handleNodeMouseDown(e, node)}
-                        on:mouseup={(e) => handleNodeMouseUp(e, node)}
-                        on:mousemove
+                        on:pointerdown={(e) => handleNodePointerDown(e, node)}
+                        on:pointerup={(e) => handleNodePointerUp(e, node)}
+                        on:pointermove
                     />
                 {/each}
             </g>

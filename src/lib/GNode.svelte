@@ -31,9 +31,9 @@
     data-name={name}
     on:mouseenter={handleMouseEnter}
     on:mouseleave={handleMouseLeave}
-    on:mousedown
-    on:mouseup
-    on:mousemove
+    on:pointerdown
+    on:pointerup
+    on:pointermove
 >
     <circle fill="white" stroke={strokeColor} r={Math.abs($rProc)} />
     <text text-anchor="middle" fill={strokeColor} class="pointer-events-none select-none"

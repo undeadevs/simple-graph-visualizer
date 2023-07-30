@@ -126,14 +126,14 @@
                     <span class="flex-1 flex gap-2 items-center">
                         <input
                             type="text"
-                            class="p-2 rounded flex-1 md:max-w-[8rem] bg-gray-700 text-gray-100"
+                            class="p-2 rounded flex-1 w-full md:max-w-[8rem] bg-gray-700 text-gray-100"
                             value={edge[0]}
                             on:input={(e) => handleInput(e, i, 0)}
                         />
                         <span class="text-gray-50 font-bold">-&gt;</span>
                         <input
                             type="text"
-                            class="p-2 rounded flex-1 md:max-w-[8rem] bg-gray-700 text-gray-100"
+                            class="p-2 rounded flex-1 w-full md:max-w-[8rem] bg-gray-700 text-gray-100"
                             value={edge[1]}
                             on:input={(e) => handleInput(e, i, 1)}
                         />

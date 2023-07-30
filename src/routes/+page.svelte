@@ -3,7 +3,7 @@
     import GNode from '$lib/GNode.svelte';
 
     type GNodePos = [number, number];
-    type GNodeName = string;
+    type GNodeName = string & { __brand: 'GNodeName' };
     type GNodeList = Record<GNodeName, GNodePos>;
 
     let innerWidth = 0;
@@ -11,13 +11,18 @@
     let viewerWidth = 0;
     let viewerHeight = 0;
 
-    let edges: [string, string][] = [];
+    let edges: [GNodeName, GNodeName][] = [];
     let nodes: GNodeList = {};
     $: nodeRadius = 150 / Object.keys(nodes).length;
     const distFromOrigin = 100;
 
+    function getRecordKeys<T extends Record<string, unknown>, K extends keyof T>(obj: T): K[] {
+        return Object.keys(obj) as K[];
+    }
+
     function updateNodes() {
-        let res: Record<string, [number, number]> = {};
+        console.time("nodes")
+        let res: GNodeList = {};
         for (let i = 0; i < edges.length; i++) {
             const edge = edges[i];
             if (!(edge[0] in res)) {
@@ -27,7 +32,7 @@
                 res[edge[1]] = [0, 0];
             }
         }
-        const nodeNames = Object.keys(res);
+        const nodeNames = getRecordKeys(res);
         const nodesCount = nodeNames.length;
         const angleDiv = 360 / nodesCount;
         for (let i = 0; i < nodesCount; i++) {
@@ -37,6 +42,7 @@
             const y = distFromOrigin * Math.sin(angleRad);
             res[nodeNames[i]] = [x, y];
         }
+        console.timeEnd("nodes");
         nodes = res;
     }
 
@@ -44,14 +50,12 @@
         const xBetween = node2[0] - node1[0];
         const yBetween = node2[1] - node1[1];
         const magBetween = Math.sqrt(xBetween ** 2 + yBetween ** 2);
-        const dx1 = (xBetween * nodeRadius) / (magBetween || 1);
-        const dy1 = (yBetween * nodeRadius) / (magBetween || 1);
-        const dx2 = (xBetween * -nodeRadius) / (magBetween || 1);
-        const dy2 = (yBetween * -nodeRadius) / (magBetween || 1);
-        const x1 = node1[0] + dx1;
-        const y1 = node1[1] + dy1;
-        const x2 = node2[0] + dx2;
-        const y2 = node2[1] + dy2;
+        const dx = (xBetween * nodeRadius) / (magBetween || 1);
+        const dy = (yBetween * nodeRadius) / (magBetween || 1);
+        const x1 = node1[0] + dx;
+        const y1 = node1[1] + dy;
+        const x2 = node2[0] - dx;
+        const y2 = node2[1] - dy;
 
         return {
             x1,
@@ -62,12 +66,12 @@
     }
 
     function handleInput(e: Event, i: number, side: number) {
-        edges[i][side] = (e.target as HTMLInputElement).value;
+        edges[i][side] = (e.target as HTMLInputElement).value as GNodeName;
         updateNodes();
     }
 
     function handleAdd(e: MouseEvent) {
-        edges[edges.length] = ['_', '_'];
+        edges[edges.length] = ['_', '_'] as [GNodeName, GNodeName];
         updateNodes();
     }
 
@@ -77,18 +81,18 @@
         updateNodes();
     }
 
-    let isHolding: Record<string, boolean> = {};
+    let isHolding: Record<GNodeName, boolean> = {};
 
     function handleNodePointerDown(e: Event, nodeName: string) {
-        isHolding[nodeName] = true;
+        isHolding[nodeName as GNodeName] = true;
     }
 
     function handleNodePointerUp(e: Event, nodeName: string) {
-        isHolding[nodeName] = false;
+        isHolding[nodeName as GNodeName] = false;
     }
 
     function handleNodePointerMove(e: MouseEvent) {
-        Object.keys(isHolding).forEach((nodeName) => {
+        getRecordKeys(isHolding).forEach((nodeName) => {
             if (isHolding[nodeName]) {
                 const updatedX = e.offsetX - viewerWidth / 2;
                 const updatedY = e.offsetY - viewerHeight / 2;
@@ -98,7 +102,7 @@
     }
 
     function bubbleDownPointerUp(e: MouseEvent) {
-        Object.keys(isHolding).forEach((nodeName) => {
+        getRecordKeys(isHolding).forEach((nodeName) => {
             if (isHolding[nodeName]) {
                 const chosenNodeEl = document.querySelector(`circle[data-name="${nodeName}"]`);
                 if (chosenNodeEl === e.target) return;
@@ -130,7 +134,9 @@
                             value={edge[0]}
                             on:input={(e) => handleInput(e, i, 0)}
                         />
-                        <span class="text-gray-300 font-bold"><i class="fa-solid fa-arrow-right"></i></span>
+                        <span class="text-gray-300 font-bold"
+                            ><i class="fa-solid fa-arrow-right" /></span
+                        >
                         <input
                             type="text"
                             class="p-2 rounded flex-1 w-full md:max-w-[8rem] bg-gray-700 text-gray-100"
@@ -156,7 +162,7 @@
             height={viewerHeight}
             class="touch-none"
             on:mouseleave={() =>
-                Object.keys(isHolding).forEach((node) =>
+                getRecordKeys(isHolding).forEach((node) =>
                     isHolding[node] ? (isHolding[node] = false) : false
                 )}
             on:pointermove={handleNodePointerMove}
@@ -177,19 +183,25 @@
             <g transform="translate({viewerWidth / 2} {viewerHeight / 2})">
                 {#key edges}
                     {#each edges as edge, i (i)}
-                        <GEdge {...getLineBetween(nodes[edge[0]], nodes[edge[1]])} r={nodeRadius} />
+                            <GEdge
+                                {...getLineBetween(
+                                    nodes[edge[0]],
+                                    nodes[edge[1]]
+                                )}
+                                r={nodeRadius}
+                            />
                     {/each}
                 {/key}
-                {#each Object.keys(nodes) as node, i (i)}
-                    <GNode
-                        x={nodes[node][0]}
-                        y={nodes[node][1]}
-                        r={nodeRadius}
-                        name={node}
-                        on:pointerdown={(e) => handleNodePointerDown(e, node)}
-                        on:pointerup={(e) => handleNodePointerUp(e, node)}
-                        on:pointermove
-                    />
+                {#each getRecordKeys(nodes) as node, i (i)}
+                        <GNode
+                            x={nodes[node][0]}
+                            y={nodes[node][1]}
+                            r={nodeRadius}
+                            name={node}
+                            on:pointerdown={(e) => handleNodePointerDown(e, node)}
+                            on:pointerup={(e) => handleNodePointerUp(e, node)}
+                            on:pointermove
+                        />
                 {/each}
             </g>
         </svg>

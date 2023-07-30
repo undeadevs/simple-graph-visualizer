@@ -1,4 +1,4 @@
-# Simple Graph visualizer
+# Simple Graph Visualizer
 A simple interactive graph and edges visualizer powered by Svelte
 
 ## Quick Start

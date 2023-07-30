@@ -21,7 +21,6 @@
     }
 
     function updateNodes() {
-        console.time("nodes")
         let res: GNodeList = {};
         for (let i = 0; i < edges.length; i++) {
             const edge = edges[i];
@@ -42,7 +41,6 @@
             const y = distFromOrigin * Math.sin(angleRad);
             res[nodeNames[i]] = [x, y];
         }
-        console.timeEnd("nodes");
         nodes = res;
     }
 
